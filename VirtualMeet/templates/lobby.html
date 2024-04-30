@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <section id="form-container">
+
+        <img id="logo" src="{% static 'images/chat-icon.png' %}"/>
+
+        <div id="welcome-message">
+            <h1>Welcome to Virtual Meet</h1>
+            <p> A Chatroom Platform </p>
+        </div>
+
+        <form id="login-form">
+            <div class="form-field">
+                <label>Room</label>
+                <input type="text" name="room" id="room" placeholder="Enter room name..." style="text-transform: uppercase;"/>
+            </div>
+
+            <div class="form-field">
+                <label>Name</label>
+                <input type="text" name="room" id="name" placeholder="Enter username..."/>
+            </div>
+
+            <div class="form-field">
+                <input type="submit"  value="Join Room">
+            </div>
+        </form>
+    </section>
+
+    <form action="" id="schedule-form">
+        <div class="form-field">
+            <label>Scheduled Date</label>
+            <input type="date" name="date" id="date" placeholder="Scheduling date" style="text-transform: uppercase;"/>
+        </div>
+
+        <div class="form-field">
+            <label>Subject</label>
+            <input type="text" name="subject" id="subject" placeholder="Subject of the meeting..." style="text-transform: uppercase;"/>
+        </div>
+
+        <div class="form-field">
+            <input type="submit"  value="Join Room">
+        </div>
+    </form>
+ 
+
+</main>
+
+<script>
+
+    let schedule = document.getElementById('schedule-form')
+
+    let handleScheduleSubmit = async (e) => {
+        e.preventDefault();
+
+        let date = $('#date').val()
+        let subject = $('#subject').val()
+        let csr = $('input[name=csrfmiddlewaretoken]').val()
+
+        $.ajax({
+            url: 'http://127.0.0.1:8000/schedulemeeting/',
+            method: 'POST',
+            data: JSON.stringify({ date: date, subject: subject, csrfmiddlewaretoken: csr }),
+            success: function(data) {
+                console.log('Status code', data.status)
+            }
+        })
+    }
+
+    schedule.addEventListener('submit', handleScheduleSubmit)
+
+
+    let form = document.getElementById('login-form')
+
+    let handleLoginSubmit = async (e) => {
+        e.preventDefault();
+        
+        let room = $('#room').val()
+        let name = $('#name').val()
+        room = room.toUpperCase()
+        console.log(room)
+
+        let response = await fetch(`get_token/?channel=${room}`)
+        let data = await response.json()
+
+        let UID = data.uid
+        let token = data.token
+
+        sessionStorage.setItem('UID', UID)
+        sessionStorage.setItem('token', token)
+        sessionStorage.setItem('room', room)
+        sessionStorage.setItem('name', name)
+
+        window.open('/room/', '_self')
+    }
+
+    form.addEventListener('submit', handleLoginSubmit)
+</script>
+
+{% endblock %}
